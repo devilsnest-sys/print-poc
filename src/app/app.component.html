@@ -20,9 +20,23 @@
 
   <section class="viewer-panel" aria-label="Document preview">
     <iframe
+      *ngIf="viewerMode === 'frame'"
       id="documentFrame"
       title="Document preview"
       [src]="documentUrl">
     </iframe>
+
+    <div *ngIf="viewerMode === 'image'" class="image-viewer">
+      <img [src]="rawDocumentUrl" [alt]="documentTitle">
+    </div>
+
+    <div *ngIf="viewerMode === 'pdf-mobile'" class="mobile-pdf-viewer">
+      <div>
+        <span class="eyebrow">PDF selected</span>
+        <h2>{{ documentTitle }}</h2>
+        <p>Mobile browsers do not reliably show local PDFs inside an app frame. Open it in a browser tab to view or print it cleanly.</p>
+      </div>
+      <button type="button" class="primary" (click)="openDocumentInNewTab()">Open PDF</button>
+    </div>
   </section>
 </main>

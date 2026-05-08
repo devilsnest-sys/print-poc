@@ -1,7 +1,8 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, HostListener, OnDestroy } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 type DocumentKind = 'Sample HTML' | 'PDF' | 'Image' | 'Text';
+type ViewerMode = 'frame' | 'image' | 'pdf-mobile';
 
 @Component({
   selector: 'app-root',
@@ -13,13 +14,15 @@ export class AppComponent implements OnDestroy {
   documentTitle = 'Sample invoice';
   documentKind: DocumentKind = 'Sample HTML';
   documentUrl: SafeResourceUrl;
+  rawDocumentUrl = 'sample-document.html';
+  viewerMode: ViewerMode = 'frame';
   selectedFileName = '';
   errorMessage = '';
 
   private objectUrl?: string;
 
   constructor(private readonly sanitizer: DomSanitizer) {
-    this.documentUrl = this.sanitizer.bypassSecurityTrustResourceUrl('/sample-document.html');
+    this.documentUrl = this.sanitizeUrl(this.rawDocumentUrl);
   }
 
   ngOnDestroy(): void {
@@ -32,7 +35,7 @@ export class AppComponent implements OnDestroy {
     this.documentKind = 'Sample HTML';
     this.selectedFileName = '';
     this.errorMessage = '';
-    this.documentUrl = this.sanitizer.bypassSecurityTrustResourceUrl('/sample-document.html');
+    this.setDocumentSource('sample-document.html', 'frame');
   }
 
   openFile(event: Event): void {
@@ -67,6 +70,16 @@ export class AppComponent implements OnDestroy {
   }
 
   printDocument(): void {
+    if (this.viewerMode === 'pdf-mobile') {
+      this.openDocumentInNewTab();
+      return;
+    }
+
+    if (this.viewerMode === 'image') {
+      this.printFromTemporaryFrame();
+      return;
+    }
+
     const viewer = document.getElementById('documentFrame') as HTMLIFrameElement | null;
     const viewerWindow = viewer?.contentWindow;
 
@@ -79,11 +92,22 @@ export class AppComponent implements OnDestroy {
     viewerWindow.print();
   }
 
+  openDocumentInNewTab(): void {
+    window.open(this.rawDocumentUrl, '_blank', 'noopener,noreferrer');
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    if (this.documentKind === 'PDF') {
+      this.viewerMode = this.isMobileViewer() ? 'pdf-mobile' : 'frame';
+    }
+  }
+
   private showBlob(blob: Blob, kind: DocumentKind): void {
     this.revokeObjectUrl();
     this.objectUrl = URL.createObjectURL(blob);
     this.documentKind = kind;
-    this.documentUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.objectUrl);
+    this.setDocumentSource(this.objectUrl, this.getViewerMode(kind));
   }
 
   private showTextFile(file: File): void {
@@ -133,5 +157,48 @@ export class AppComponent implements OnDestroy {
       URL.revokeObjectURL(this.objectUrl);
       this.objectUrl = undefined;
     }
+  }
+
+  private setDocumentSource(url: string, mode: ViewerMode): void {
+    this.rawDocumentUrl = url;
+    this.documentUrl = this.sanitizeUrl(url);
+    this.viewerMode = mode;
+  }
+
+  private sanitizeUrl(url: string): SafeResourceUrl {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
+
+  private getViewerMode(kind: DocumentKind): ViewerMode {
+    if (kind === 'Image') {
+      return 'image';
+    }
+
+    if (kind === 'PDF' && this.isMobileViewer()) {
+      return 'pdf-mobile';
+    }
+
+    return 'frame';
+  }
+
+  private isMobileViewer(): boolean {
+    return window.matchMedia('(max-width: 760px), (pointer: coarse)').matches;
+  }
+
+  private printFromTemporaryFrame(): void {
+    const frame = document.createElement('iframe');
+    frame.style.left = '-9999px';
+    frame.style.position = 'fixed';
+    frame.style.top = '0';
+    frame.style.width = '1px';
+    frame.style.height = '1px';
+    frame.src = this.rawDocumentUrl;
+    document.body.appendChild(frame);
+
+    frame.onload = () => {
+      frame.contentWindow?.focus();
+      frame.contentWindow?.print();
+      window.setTimeout(() => frame.remove(), 1000);
+    };
   }
 }
