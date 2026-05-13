@@ -1,42 +1,25 @@
 <main class="shell">
   <section class="toolbar" aria-label="Document tools">
     <div class="document-meta">
-      <span class="eyebrow">Document viewer</span>
+      <span class="eyebrow">JSON to printable PDF</span>
       <h1>{{ documentTitle }}</h1>
-      <p>{{ documentKind }} document is open in view mode inside the app.</p>
+      <p>No source file is opened. Content, layout, page setup, and styles are generated dynamically from JSON.</p>
     </div>
 
     <div class="actions">
-      <label class="file-picker">
-        <input type="file" accept="application/pdf,image/*,text/plain,text/csv,text/markdown" (change)="openFile($event)">
-        Open document
-      </label>
-      <button type="button" class="secondary" (click)="loadSampleDocument()">Sample</button>
-      <button type="button" class="primary" (click)="printDocument()">Print</button>
+      <button type="button" class="secondary" (click)="generateDocumentFromJson()">Regenerate from JSON</button>
+      <button type="button" class="secondary" (click)="openDocumentInNewTab()">Preview tab</button>
+      <button type="button" class="primary" (click)="printDocument()">Print PDF</button>
     </div>
   </section>
 
   <p class="error" *ngIf="errorMessage" role="alert">{{ errorMessage }}</p>
 
-  <section class="viewer-panel" aria-label="Document preview">
+  <section class="viewer-panel" aria-label="Generated document preview">
     <iframe
-      *ngIf="viewerMode === 'frame'"
       id="documentFrame"
-      title="Document preview"
+      title="Generated document preview"
       [src]="documentUrl">
     </iframe>
-
-    <div *ngIf="viewerMode === 'image'" class="image-viewer">
-      <img [src]="rawDocumentUrl" [alt]="documentTitle">
-    </div>
-
-    <div *ngIf="viewerMode === 'pdf-mobile'" class="mobile-pdf-viewer">
-      <div>
-        <span class="eyebrow">PDF selected</span>
-        <h2>{{ documentTitle }}</h2>
-        <p>Mobile browsers do not reliably show local PDFs inside an app frame. Open it in a browser tab to view or print it cleanly.</p>
-      </div>
-      <button type="button" class="primary" (click)="openDocumentInNewTab()">Open PDF</button>
-    </div>
   </section>
 </main>
