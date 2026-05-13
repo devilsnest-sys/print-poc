@@ -8,6 +8,7 @@
 
     <div class="actions">
       <button type="button" class="secondary" (click)="generateDocumentFromJson()">Regenerate from JSON</button>
+      <button type="button" class="secondary" (click)="resetJsonInput()">Reset JSON</button>
       <button type="button" class="secondary" (click)="openDocumentInNewTab()">Preview tab</button>
       <button type="button" class="primary" (click)="printDocument()">Print PDF</button>
     </div>
@@ -15,11 +16,28 @@
 
   <p class="error" *ngIf="errorMessage" role="alert">{{ errorMessage }}</p>
 
-  <section class="viewer-panel" aria-label="Generated document preview">
-    <iframe
-      id="documentFrame"
-      title="Generated document preview"
-      [src]="documentUrl">
-    </iframe>
+  <section class="workspace" aria-label="JSON input and generated document preview">
+    <aside class="json-panel">
+      <label for="jsonInput">
+        <span class="eyebrow">JSON input</span>
+        <strong>Update document data and styles</strong>
+      </label>
+      <textarea
+        id="jsonInput"
+        [value]="jsonInput"
+        (input)="updateJsonInput($event)"
+        spellcheck="false"
+        aria-describedby="jsonHelp">
+      </textarea>
+      <p id="jsonHelp">Click regenerate or print after editing. Print uses only the latest valid JSON in this box.</p>
+    </aside>
+
+    <section class="viewer-panel" aria-label="Generated document preview">
+      <iframe
+        id="documentFrame"
+        title="Generated document preview"
+        [src]="documentUrl">
+      </iframe>
+    </section>
   </section>
 </main>

@@ -48,7 +48,7 @@ interface JsonPrintDocument {
   styleUrl: './app.component.css'
 })
 export class AppComponent implements OnDestroy {
-  readonly printJson: JsonPrintDocument = {
+  readonly defaultPrintJson: JsonPrintDocument = {
     title: 'Invoice generated from JSON',
     kind: 'Runtime JSON',
     page: {
@@ -178,8 +178,10 @@ export class AppComponent implements OnDestroy {
     ]
   };
 
-  documentTitle = this.printJson.title;
-  documentKind = this.printJson.kind;
+  jsonInput = JSON.stringify(this.defaultPrintJson, null, 2);
+  activePrintJson = this.defaultPrintJson;
+  documentTitle = this.defaultPrintJson.title;
+  documentKind = this.defaultPrintJson.kind;
   documentUrl: SafeResourceUrl;
   rawDocumentUrl = '';
   errorMessage = '';
@@ -195,21 +197,41 @@ export class AppComponent implements OnDestroy {
     this.revokeObjectUrl();
   }
 
-  generateDocumentFromJson(): void {
-    const html = this.createPrintableDocument(this.printJson);
+  generateDocumentFromJson(): boolean {
+    const parsedJson = this.parseJsonInput();
+
+    if (!parsedJson) {
+      return false;
+    }
+
+    this.activePrintJson = parsedJson;
+    const html = this.createPrintableDocument(parsedJson);
 
     this.revokeObjectUrl();
     this.objectUrl = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
     this.rawDocumentUrl = this.objectUrl;
     this.documentUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.objectUrl);
-    this.documentTitle = this.printJson.title;
-    this.documentKind = this.printJson.kind;
+    this.documentTitle = parsedJson.title;
+    this.documentKind = parsedJson.kind;
     this.errorMessage = '';
+    return true;
   }
 
   printDocument(): void {
-    this.generateDocumentFromJson();
+    if (!this.generateDocumentFromJson()) {
+      return;
+    }
+
     this.printFromGeneratedDocument();
+  }
+
+  updateJsonInput(event: Event): void {
+    this.jsonInput = (event.target as HTMLTextAreaElement).value;
+  }
+
+  resetJsonInput(): void {
+    this.jsonInput = JSON.stringify(this.defaultPrintJson, null, 2);
+    this.generateDocumentFromJson();
   }
 
   openDocumentInNewTab(): void {
@@ -230,6 +252,97 @@ export class AppComponent implements OnDestroy {
     ${documentJson.body.map((block) => this.renderBlock(block)).join('')}
   </body>
 </html>`;
+  }
+
+  private parseJsonInput(): JsonPrintDocument | null {
+    try {
+      const parsed = JSON.parse(this.jsonInput) as unknown;
+
+      if (!this.isJsonPrintDocument(parsed)) {
+        this.errorMessage = 'Invalid JSON schema. Include title, kind, page, styles, and body blocks.';
+        return null;
+      }
+
+      return parsed;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown parsing error.';
+      this.errorMessage = `Invalid JSON: ${message}`;
+      return null;
+    }
+  }
+
+  private isJsonPrintDocument(value: unknown): value is JsonPrintDocument {
+    if (!this.isRecord(value)) {
+      return false;
+    }
+
+    return typeof value['title'] === 'string'
+      && typeof value['kind'] === 'string'
+      && this.isPageConfig(value['page'])
+      && this.isStylesConfig(value['styles'])
+      && Array.isArray(value['body'])
+      && value['body'].every((block) => this.isJsonBlock(block));
+  }
+
+  private isPageConfig(value: unknown): value is JsonPrintDocument['page'] {
+    return this.isRecord(value)
+      && typeof value['size'] === 'string'
+      && typeof value['margin'] === 'string';
+  }
+
+  private isStylesConfig(value: unknown): value is Record<string, JsonStyle> {
+    return this.isRecord(value)
+      && Object.values(value).every((style) => this.isJsonStyle(style));
+  }
+
+  private isJsonStyle(value: unknown): value is JsonStyle {
+    return this.isRecord(value)
+      && Object.values(value).every((styleValue) => typeof styleValue === 'string' || typeof styleValue === 'number');
+  }
+
+  private isJsonBlock(value: unknown): value is JsonBlock {
+    if (!this.isRecord(value) || typeof value['type'] !== 'string') {
+      return false;
+    }
+
+    if (value['type'] === 'text') {
+      return typeof value['tag'] === 'string'
+        && ['h1', 'h2', 'p', 'strong', 'span', 'div'].includes(value['tag'])
+        && typeof value['text'] === 'string'
+        && this.hasValidOptionalBlockAttributes(value);
+    }
+
+    if (value['type'] === 'container') {
+      return typeof value['tag'] === 'string'
+        && ['article', 'header', 'section', 'div', 'footer'].includes(value['tag'])
+        && Array.isArray(value['children'])
+        && value['children'].every((child) => this.isJsonBlock(child))
+        && this.hasValidOptionalBlockAttributes(value);
+    }
+
+    if (value['type'] === 'table') {
+      return Array.isArray(value['columns'])
+        && value['columns'].every((column) => typeof column === 'string')
+        && Array.isArray(value['rows'])
+        && value['rows'].every((row) => Array.isArray(row) && row.every((cell) => this.isPrintableCell(cell)))
+        && (value['footer'] === undefined || (Array.isArray(value['footer']) && value['footer'].every((cell) => this.isPrintableCell(cell))))
+        && this.hasValidOptionalBlockAttributes(value);
+    }
+
+    return false;
+  }
+
+  private hasValidOptionalBlockAttributes(value: Record<string, unknown>): boolean {
+    return (value['className'] === undefined || typeof value['className'] === 'string')
+      && (value['style'] === undefined || this.isJsonStyle(value['style']));
+  }
+
+  private isPrintableCell(value: unknown): value is string | number {
+    return typeof value === 'string' || typeof value === 'number';
+  }
+
+  private isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
   }
 
   private createCss(documentJson: JsonPrintDocument): string {

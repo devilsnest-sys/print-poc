@@ -93,6 +93,53 @@ button {
   padding: 10px 12px;
 }
 
+.workspace {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(320px, 440px) minmax(0, 1fr);
+  min-height: 0;
+}
+
+.json-panel {
+  background: #ffffff;
+  border: 1px solid #d9e1ec;
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  min-height: 0;
+  padding: 16px;
+}
+
+.json-panel label {
+  color: #182033;
+  display: grid;
+  gap: 2px;
+}
+
+.json-panel textarea {
+  background: #101827;
+  border: 1px solid #263752;
+  border-radius: 8px;
+  color: #e6edf7;
+  font: 12px/1.55 "Cascadia Code", Consolas, "Courier New", monospace;
+  min-height: 560px;
+  outline: none;
+  padding: 14px;
+  resize: vertical;
+  tab-size: 2;
+  white-space: pre;
+}
+
+.json-panel textarea:focus {
+  border-color: #136f63;
+  box-shadow: 0 0 0 3px rgba(19, 111, 99, 0.18);
+}
+
+.json-panel p {
+  font-size: 13px;
+  margin: 0;
+}
+
 .viewer-panel {
   background: #ffffff;
   border: 1px solid #d9e1ec;
@@ -123,8 +170,16 @@ iframe {
     justify-content: stretch;
   }
 
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+
   button {
     flex: 1 1 140px;
+  }
+
+  .json-panel textarea {
+    min-height: 360px;
   }
 
   iframe {
