@@ -9,7 +9,7 @@
     <div class="actions">
       <button type="button" class="secondary" (click)="generateDocumentFromJson()">Regenerate from JSON</button>
       <button type="button" class="secondary" (click)="resetJsonInput()">Reset JSON</button>
-      <button type="button" class="secondary" (click)="openDocumentInNewTab()">Open preview</button>
+      <button type="button" class="secondary" (click)="openDocumentInNewTab()" [disabled]="!hasGeneratedPdf">Open preview</button>
       <button type="button" class="primary" (click)="printDocument()">Print PDF</button>
     </div>
   </section>
@@ -29,11 +29,17 @@
         spellcheck="false"
         aria-describedby="jsonHelp">
       </textarea>
-      <p id="jsonHelp">Click regenerate for HTML preview, or Print PDF to generate and show a PDF from the latest valid JSON.</p>
+      <p id="jsonHelp">Click Print PDF to generate and show a PDF from the latest valid JSON.</p>
     </aside>
 
     <section class="viewer-panel" aria-label="Generated document preview">
+      <div class="empty-preview" *ngIf="!hasGeneratedPdf">
+        <span class="eyebrow">PDF preview</span>
+        <strong>No PDF generated yet</strong>
+        <p>Click Print PDF to generate and show the document here.</p>
+      </div>
       <iframe
+        *ngIf="hasGeneratedPdf"
         id="documentFrame"
         title="Generated document preview"
         [src]="documentUrl">

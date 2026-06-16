@@ -181,12 +181,12 @@ export class AppComponent implements OnDestroy {
   documentUrl: SafeResourceUrl;
   rawDocumentUrl = '';
   errorMessage = '';
+  hasGeneratedPdf = false;
 
   private objectUrl?: string;
 
   constructor(private readonly sanitizer: DomSanitizer) {
     this.documentUrl = this.sanitizer.bypassSecurityTrustResourceUrl('');
-    this.generateDocumentFromJson();
   }
 
   ngOnDestroy(): void {
@@ -201,12 +201,6 @@ export class AppComponent implements OnDestroy {
     }
 
     this.activePrintJson = parsedJson;
-    const html = this.createPrintableDocument(parsedJson);
-
-    this.revokeObjectUrl();
-    this.objectUrl = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
-    this.rawDocumentUrl = this.objectUrl;
-    this.documentUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.objectUrl);
     this.documentTitle = parsedJson.title;
     this.documentKind = parsedJson.kind;
     this.errorMessage = '';
@@ -223,14 +217,23 @@ export class AppComponent implements OnDestroy {
 
   updateJsonInput(event: Event): void {
     this.jsonInput = (event.target as HTMLTextAreaElement).value;
+    this.clearGeneratedPdf();
   }
 
   resetJsonInput(): void {
     this.jsonInput = JSON.stringify(this.defaultPrintJson, null, 2);
-    this.generateDocumentFromJson();
+    this.activePrintJson = this.defaultPrintJson;
+    this.documentTitle = this.defaultPrintJson.title;
+    this.documentKind = this.defaultPrintJson.kind;
+    this.errorMessage = '';
+    this.clearGeneratedPdf();
   }
 
   openDocumentInNewTab(): void {
+    if (!this.rawDocumentUrl) {
+      return;
+    }
+
     window.open(this.rawDocumentUrl, '_blank', 'noopener,noreferrer');
   }
 
@@ -244,6 +247,7 @@ export class AppComponent implements OnDestroy {
     this.documentUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.objectUrl);
     this.documentTitle = documentJson.title;
     this.documentKind = `${documentJson.kind} PDF`;
+    this.hasGeneratedPdf = true;
   }
 
   private createPrintableDocument(documentJson: JsonPrintDocument): string {
@@ -444,6 +448,13 @@ export class AppComponent implements OnDestroy {
       URL.revokeObjectURL(this.objectUrl);
       this.objectUrl = undefined;
     }
+  }
+
+  private clearGeneratedPdf(): void {
+    this.revokeObjectUrl();
+    this.rawDocumentUrl = '';
+    this.documentUrl = this.sanitizer.bypassSecurityTrustResourceUrl('');
+    this.hasGeneratedPdf = false;
   }
 
   private collectPdfLines(documentJson: JsonPrintDocument): string[] {
