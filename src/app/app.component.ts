@@ -49,32 +49,33 @@ interface JsonPrintDocument {
 })
 export class AppComponent implements OnDestroy {
   readonly defaultPrintJson: JsonPrintDocument = {
-    title: 'Invoice generated from JSON',
-    kind: 'Runtime JSON',
+    title: 'Administration of IV Heparin',
+    kind: 'Skill Evaluation',
     page: {
       size: 'A4',
       margin: '18mm'
     },
     styles: {
       body: {
-        color: '#202938',
-        font: '14px/1.5 Arial, sans-serif',
+        color: '#1f2937',
+        font: '13px/1.5 Arial, sans-serif',
         margin: 0
       },
       page: {
-        margin: '28px auto',
-        maxWidth: '760px',
-        padding: '32px'
+        margin: '20px auto',
+        maxWidth: '820px',
+        padding: '28px'
       },
       header: {
         alignItems: 'flex-start',
-        borderBottom: '2px solid #202938',
+        borderBottom: '2px solid #1f2937',
         display: 'flex',
         justifyContent: 'space-between',
-        paddingBottom: '18px'
+        gap: '24px',
+        paddingBottom: '16px'
       },
       title: {
-        fontSize: '28px',
+        fontSize: '26px',
         margin: '0 0 6px'
       },
       sectionTitle: {
@@ -83,23 +84,18 @@ export class AppComponent implements OnDestroy {
         textTransform: 'uppercase'
       },
       muted: {
-        color: '#637083'
-      },
-      grid: {
-        display: 'grid',
-        gap: '24px',
-        gridTemplateColumns: 'repeat(2, 1fr)',
-        margin: '28px 0'
+        color: '#5f6f84'
       },
       table: {
         borderCollapse: 'collapse',
-        marginTop: '18px',
+        fontSize: '12px',
+        marginTop: '20px',
         width: '100%'
       },
       note: {
-        background: '#f4f7fb',
-        border: '1px solid #d9e1ec',
-        marginTop: '26px',
+        background: '#f6f8fb',
+        border: '1px solid #d8dee8',
+        marginTop: '18px',
         padding: '14px'
       }
     },
@@ -118,16 +114,16 @@ export class AppComponent implements OnDestroy {
                 type: 'container',
                 tag: 'div',
                 children: [
-                  { type: 'text', tag: 'h1', className: 'title', text: 'Invoice' },
-                  { type: 'text', tag: 'div', className: 'muted', text: 'Print POC Services' }
+                  { type: 'text', tag: 'h1', className: 'title', text: 'Skill Evaluation' },
+                  { type: 'text', tag: 'div', className: 'muted', text: 'Administration of IV Heparin' }
                 ]
               },
               {
                 type: 'container',
                 tag: 'div',
                 children: [
-                  { type: 'text', tag: 'strong', text: 'INV-2048' },
-                  { type: 'text', tag: 'div', className: 'muted', text: 'Issued: May 8, 2026' }
+                  { type: 'text', tag: 'strong', text: 'Publish Date: May 22, 2026' },
+                  { type: 'text', tag: 'div', className: 'muted', text: 'Educational checklist' }
                 ]
               }
             ]
@@ -135,43 +131,43 @@ export class AppComponent implements OnDestroy {
           {
             type: 'container',
             tag: 'section',
-            className: 'grid',
+            className: 'note',
             children: [
-              {
-                type: 'container',
-                tag: 'div',
-                children: [
-                  { type: 'text', tag: 'h2', className: 'sectionTitle', text: 'Bill To' },
-                  { type: 'text', tag: 'strong', text: 'Acme Operations' },
-                  { type: 'text', tag: 'p', text: '42 Market Street, Bengaluru, KA' }
-                ]
-              },
-              {
-                type: 'container',
-                tag: 'div',
-                children: [
-                  { type: 'text', tag: 'h2', className: 'sectionTitle', text: 'Payment' },
-                  { type: 'text', tag: 'p', text: 'Due on receipt' },
-                  { type: 'text', tag: 'p', text: 'Status: Ready for print' }
-                ]
-              }
+              { type: 'text', tag: 'p', text: 'This checklist identifies the steps needed to administer IV heparin and provides rationales explaining why the steps are performed.' },
+              { type: 'text', tag: 'p', text: 'Referenced and adapted from DynaHealth. (n.d.). Administering IV heparin to adults; and Smythe, M. A., Priziola, J., Dobesh, P. P., Wirth, D., Cuker, A., & Wittkowsky, A. K. (2016). Guidance for the practical management of the heparin anticoagulants in the treatment of venous thromboembolism. Journal of Thrombosis and Thrombolysis, 41(1), 165-86. https://doi.org/10.1007/s11239-015-1315-2' },
+              { type: 'text', tag: 'p', text: 'This content is for educational purposes only and should be used as a guide, subject to organizational protocols and applicable regulations.' }
             ]
           },
           {
             type: 'table',
             className: 'table',
-            columns: ['Item', 'Qty', 'Amount'],
+            columns: ['#', 'Step', 'Checklist Item', 'Rationale'],
             rows: [
-              ['Document viewer setup', 1, 'Rs. 4,500.00'],
-              ['Print workflow validation', 1, 'Rs. 2,000.00']
-            ],
-            footer: ['Total', '', 'Rs. 6,500.00']
-          },
-          {
-            type: 'text',
-            tag: 'p',
-            className: 'note',
-            text: 'This PDF-ready document is generated completely from JSON when the app runs.'
+              [1, 'Check', 'Verify the five rights of medication administration by checking the medication label to the MAR three times: upon removal from storage, before preparation, and before administration.', 'Prevents medication errors'],
+              [2, 'Check', 'Check the medication expiration date and any medication allergies or contraindications to the medication.', 'Prevents medication errors'],
+              [3, 'Check', 'Ensure that protamine sulfate is available in case of heparin overdose. Verify the organization protocol for heparin reversal and emergency management.', 'Heparin overdose can lead to hemorrhage, and protamine sulfate is the reversal agent.'],
+              [4, 'Supplies', 'Gather supplies including the heparin infusion, primary IV tubing, infusion pump, flush syringe, and antiseptic wipes.', 'Supports efficiency and prevents disruption during the procedure'],
+              [5, 'Rights', 'Support privacy, safety, comfort, and dignity during the entire procedure.', 'Protects the individual rights'],
+              [6, 'Identify', 'Identify yourself by name and confirm the individual identity per organizational policy.', 'Minimizes anxiety and prevents medical errors'],
+              [7, 'Explain', 'Explain the procedure and allow time for questions. Inform the individual about how heparin works and its side effects. Instruct the individual to report signs of bleeding.', 'Engages the individual and alleviates anxiety'],
+              [8, 'Infection Control', 'Perform hand hygiene. Use infection control measures and standard precautions during the entire procedure.', 'Prevents the transmission of microorganisms'],
+              [9, 'Scope Of Practice', 'Confirm that you are permitted to administer IV heparin infusions based on your competency, training, and scope of practice. Review the protocol if needed.', 'Heparin infusions require increased monitoring and care.'],
+              [10, 'Review Indications', 'Review the medical record and identify the provider stated indication for the heparin infusion. If unclear, seek clarification. Contact the provider if potential contraindications exist.', 'Heparin is a HIGH ALERT medication. Checking contraindications promotes safe medication administration.'],
+              [11, 'Labs', 'Review baseline coagulation labs, platelet levels, and hematocrit. Draw baseline labs if indicated and review the most recent platelet level.', 'Coagulation studies guide titration. Platelet trends help determine if HIT has developed.'],
+              [12, 'Weight', 'Obtain the individual most recent weight in kilograms.', 'Heparin is often dosed by weight.'],
+              [13, 'Obtain Medication', 'Obtain the pre-mixed heparin IV bag. Confirm the medication concentration in the bag matches the provider order.', 'A premixed IV bag helps prevent medication errors. Nurses should not mix heparin for IV infusion.'],
+              [14, 'Infusion Rate', 'Determine the starting heparin dose and infusion rate. Protocols may include an 80 unit/kg bolus followed by 18 units/kg/hr, with maximums specified when needed.', 'The rate may be determined by protocol or physician order.'],
+              [15, 'IV Access', 'Position the individual to attach the infusion to IV access. Preferably use a dedicated IV line. Consult pharmacy if compatibility is uncertain.', 'Prevents incompatibilities and inadvertent boluses that can cause adverse events.'],
+              [16, 'Prime Heparin', 'Hang the heparin bag, prime the IV tubing, insert the primed line into the pump, and label the tubing.', 'Priming prevents air bubbles and minimizes pump alarms that delay administration.'],
+              [17, 'Program Pump', 'Program the IV pump with the bolus dose and infusion rate. Confirm the pump is set to Guardrails mode or another dose-error reduction system.', 'Programming the pump correctly helps prevent medication errors.'],
+              [18, 'Verification', 'Before starting, have a second RN compare the heparin setup to the MAR, including rights, applicable lab values, and concentration. Document the second check.', 'Two-nurse verification adds a safety layer against medication errors.'],
+              [19, 'Clean Injection Port', 'Disinfect the injection port with antiseptic according to policy. Allow it to dry before attaching tubing.', 'A clean injection port prevents the spread of microorganisms.'],
+              [20, 'Attach Tubing To Patient', 'Attach heparin tubing to IV access, preferably at the y-site nearest the individual when applicable. Ensure no incompatible medications run in the same IV line. Start the infusion.', 'Ensures medication enters the vein and prevents incompatibilities or inadvertent boluses.'],
+              [21, 'Labs', 'Draw coagulation labs at appropriate intervals. Monitor for decreasing platelet levels and notify the provider if HIT is suspected.', 'Monitoring informs infusion rate changes and helps identify HIT.'],
+              [22, 'Monitor', 'Provide ongoing monitoring per policy. Check the pump with a second RN during shift changes, rate changes, new bags, relief coverage, and routine intervals. Monitor for bleeding.', 'Frequent checks catch errors and monitoring for bleeding can prevent significant adverse effects.'],
+              [23, 'Infection Control', 'Dispose of contaminated supplies and perform hand hygiene.', 'Prevents cross-contamination and transmission of microorganisms'],
+              [24, 'Document', 'Document in the MAR.', 'Tracks all care activities']
+            ]
           }
         ]
       }
@@ -222,7 +218,7 @@ export class AppComponent implements OnDestroy {
       return;
     }
 
-    this.printFromGeneratedDocument();
+    this.generatePdfFromJson(this.activePrintJson);
   }
 
   updateJsonInput(event: Event): void {
@@ -236,6 +232,18 @@ export class AppComponent implements OnDestroy {
 
   openDocumentInNewTab(): void {
     window.open(this.rawDocumentUrl, '_blank', 'noopener,noreferrer');
+  }
+
+  private generatePdfFromJson(documentJson: JsonPrintDocument): void {
+    const lines = this.collectPdfLines(documentJson);
+    const pdf = this.createPdfDocument(lines, documentJson.title);
+
+    this.revokeObjectUrl();
+    this.objectUrl = URL.createObjectURL(new Blob([pdf], { type: 'application/pdf' }));
+    this.rawDocumentUrl = this.objectUrl;
+    this.documentUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.objectUrl);
+    this.documentTitle = documentJson.title;
+    this.documentKind = `${documentJson.kind} PDF`;
   }
 
   private createPrintableDocument(documentJson: JsonPrintDocument): string {
@@ -438,20 +446,138 @@ export class AppComponent implements OnDestroy {
     }
   }
 
-  private printFromGeneratedDocument(): void {
-    const frame = document.createElement('iframe');
-    frame.style.left = '-9999px';
-    frame.style.position = 'fixed';
-    frame.style.top = '0';
-    frame.style.width = '1px';
-    frame.style.height = '1px';
-    frame.src = this.rawDocumentUrl;
-    document.body.appendChild(frame);
+  private collectPdfLines(documentJson: JsonPrintDocument): string[] {
+    const lines = [documentJson.kind, documentJson.title, ''];
+    documentJson.body.forEach((block) => this.appendBlockText(block, lines));
+    return lines;
+  }
 
-    frame.onload = () => {
-      frame.contentWindow?.focus();
-      frame.contentWindow?.print();
-      window.setTimeout(() => frame.remove(), 1000);
+  private appendBlockText(block: JsonBlock, lines: string[]): void {
+    if (block.type === 'text') {
+      lines.push(block.text);
+      return;
+    }
+
+    if (block.type === 'table') {
+      lines.push(block.columns.join(' | '));
+      block.rows.forEach((row) => lines.push(row.map((cell) => String(cell)).join(' | ')));
+      if (block.footer) {
+        lines.push(block.footer.map((cell) => String(cell)).join(' | '));
+      }
+      return;
+    }
+
+    block.children.forEach((child) => this.appendBlockText(child, lines));
+    lines.push('');
+  }
+
+  private createPdfDocument(lines: string[], title: string): string {
+    const pageWidth = 595;
+    const pageHeight = 842;
+    const margin = 44;
+    const lineHeight = 14;
+    const maxChars = 88;
+    const pages: string[][] = [[]];
+    let currentLineCount = 0;
+    const maxLinesPerPage = Math.floor((pageHeight - margin * 2) / lineHeight);
+
+    lines.flatMap((line) => this.wrapPdfLine(line, maxChars)).forEach((line) => {
+      if (currentLineCount >= maxLinesPerPage) {
+        pages.push([]);
+        currentLineCount = 0;
+      }
+
+      pages[pages.length - 1].push(line);
+      currentLineCount++;
+    });
+
+    const objects: string[] = [];
+    const addObject = (value: string): number => {
+      objects.push(value);
+      return objects.length;
     };
+    const fontObject = addObject('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');
+    const pageRefs: number[] = [];
+
+    pages.forEach((pageLines, pageIndex) => {
+      const content = [
+        'BT',
+        '/F1 10 Tf',
+        `${margin} ${pageHeight - margin} Td`,
+        `${lineHeight} TL`,
+        ...pageLines.map((line, lineIndex) => {
+          const fontCommand = pageIndex === 0 && lineIndex < 2 ? '/F1 14 Tf ' : '/F1 10 Tf ';
+          return `${fontCommand}(${this.escapePdfText(line)}) Tj T*`;
+        }),
+        'ET'
+      ].join('\n');
+      const contentObject = addObject(`<< /Length ${content.length} >>\nstream\n${content}\nendstream`);
+      pageRefs.push(addObject(`<< /Type /Page /Parent 0 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Resources << /Font << /F1 ${fontObject} 0 R >> >> /Contents ${contentObject} 0 R >>`));
+    });
+
+    const pagesObject = addObject(`<< /Type /Pages /Kids [${pageRefs.map((ref) => `${ref} 0 R`).join(' ')}] /Count ${pageRefs.length} >>`);
+    pageRefs.forEach((pageRef) => {
+      objects[pageRef - 1] = objects[pageRef - 1].replace('/Parent 0 0 R', `/Parent ${pagesObject} 0 R`);
+    });
+    const catalogObject = addObject(`<< /Type /Catalog /Pages ${pagesObject} 0 R >>`);
+    const infoObject = addObject(`<< /Title (${this.escapePdfText(title)}) /Producer (Print POC) >>`);
+
+    let pdf = '%PDF-1.4\n';
+    const offsets = [0];
+    objects.forEach((object, index) => {
+      offsets.push(pdf.length);
+      pdf += `${index + 1} 0 obj\n${object}\nendobj\n`;
+    });
+
+    const xrefOffset = pdf.length;
+    pdf += `xref\n0 ${objects.length + 1}\n`;
+    pdf += '0000000000 65535 f \n';
+    offsets.slice(1).forEach((offset) => {
+      pdf += `${String(offset).padStart(10, '0')} 00000 n \n`;
+    });
+    pdf += `trailer\n<< /Size ${objects.length + 1} /Root ${catalogObject} 0 R /Info ${infoObject} 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+
+    return pdf;
+  }
+
+  private wrapPdfLine(value: string, maxChars: number): string[] {
+    const normalized = value.replace(/\s+/g, ' ').trim();
+
+    if (!normalized) {
+      return [''];
+    }
+
+    const lines: string[] = [];
+    let current = '';
+
+    normalized.split(' ').forEach((word) => {
+      if (!current) {
+        current = word;
+        return;
+      }
+
+      if (`${current} ${word}`.length > maxChars) {
+        lines.push(current);
+        current = word;
+        return;
+      }
+
+      current = `${current} ${word}`;
+    });
+
+    if (current) {
+      lines.push(current);
+    }
+
+    return lines;
+  }
+
+  private escapePdfText(value: string): string {
+    return value
+      .normalize('NFKD')
+      .replace(/[^\x20-\x7E]/g, '')
+      .replace(/\\/g, '\\\\')
+      .replace(/\(/g, '\\(')
+      .replace(/\)/g, '\\)');
   }
 }

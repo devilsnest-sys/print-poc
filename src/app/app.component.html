@@ -1,15 +1,15 @@
 <main class="shell">
   <section class="toolbar" aria-label="Document tools">
     <div class="document-meta">
-      <span class="eyebrow">JSON to printable PDF</span>
+      <span class="eyebrow">JSON to PDF</span>
       <h1>{{ documentTitle }}</h1>
-      <p>No source file is opened. Content, layout, page setup, and styles are generated dynamically from JSON.</p>
+      <p>Content, layout, page setup, and styles are generated dynamically from JSON.</p>
     </div>
 
     <div class="actions">
       <button type="button" class="secondary" (click)="generateDocumentFromJson()">Regenerate from JSON</button>
       <button type="button" class="secondary" (click)="resetJsonInput()">Reset JSON</button>
-      <button type="button" class="secondary" (click)="openDocumentInNewTab()">Preview tab</button>
+      <button type="button" class="secondary" (click)="openDocumentInNewTab()">Open preview</button>
       <button type="button" class="primary" (click)="printDocument()">Print PDF</button>
     </div>
   </section>
@@ -29,7 +29,7 @@
         spellcheck="false"
         aria-describedby="jsonHelp">
       </textarea>
-      <p id="jsonHelp">Click regenerate or print after editing. Print uses only the latest valid JSON in this box.</p>
+      <p id="jsonHelp">Click regenerate for HTML preview, or Print PDF to generate and show a PDF from the latest valid JSON.</p>
     </aside>
 
     <section class="viewer-panel" aria-label="Generated document preview">
