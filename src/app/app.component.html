@@ -9,7 +9,10 @@
     <div class="actions">
       <button type="button" class="secondary" (click)="generateDocumentFromJson()">Regenerate from JSON</button>
       <button type="button" class="secondary" (click)="resetJsonInput()">Reset JSON</button>
-      <button type="button" class="secondary" (click)="openDocumentInNewTab()" [disabled]="!hasGeneratedPdf">Open preview</button>
+      <button type="button" class="secondary" (click)="openDocumentInNewTab()" [disabled]="!hasGeneratedPdf">
+        {{ isShowingMobileHtmlPreview ? 'Open PDF' : 'Open preview' }}
+      </button>
+      <button type="button" class="secondary" (click)="downloadDocument()" [disabled]="!hasGeneratedPdf">Download PDF</button>
       <button type="button" class="primary" (click)="printDocument()">Print PDF</button>
     </div>
   </section>
@@ -38,6 +41,9 @@
         <strong>No PDF generated yet</strong>
         <p>Click Print PDF to generate and show the document here.</p>
       </div>
+      <p class="mobile-preview-note" *ngIf="hasGeneratedPdf && isShowingMobileHtmlPreview">
+        Android Chrome cannot display generated PDF files inline, so this panel shows the generated document content. Use Download PDF to save the generated file.
+      </p>
       <iframe
         *ngIf="hasGeneratedPdf"
         id="documentFrame"

@@ -182,8 +182,10 @@ export class AppComponent implements OnDestroy {
   rawDocumentUrl = '';
   errorMessage = '';
   hasGeneratedPdf = false;
+  isShowingMobileHtmlPreview = false;
 
-  private objectUrl?: string;
+  private pdfObjectUrl?: string;
+  private previewObjectUrl?: string;
 
   constructor(private readonly sanitizer: DomSanitizer) {
     this.documentUrl = this.sanitizer.bypassSecurityTrustResourceUrl('');
@@ -237,17 +239,41 @@ export class AppComponent implements OnDestroy {
     window.open(this.rawDocumentUrl, '_blank', 'noopener,noreferrer');
   }
 
+  downloadDocument(): void {
+    if (!this.rawDocumentUrl) {
+      return;
+    }
+
+    const link = document.createElement('a');
+    link.href = this.rawDocumentUrl;
+    link.download = `${this.toFileName(this.documentTitle)}.pdf`;
+    link.rel = 'noopener';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  }
+
   private generatePdfFromJson(documentJson: JsonPrintDocument): void {
     const lines = this.collectPdfLines(documentJson);
     const pdf = this.createPdfDocument(lines, documentJson.title);
+    const shouldUseHtmlFallback = this.shouldUseHtmlPreviewFallback();
 
     this.revokeObjectUrl();
-    this.objectUrl = URL.createObjectURL(new Blob([pdf], { type: 'application/pdf' }));
-    this.rawDocumentUrl = this.objectUrl;
-    this.documentUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.objectUrl);
+    this.pdfObjectUrl = URL.createObjectURL(new Blob([pdf], { type: 'application/pdf' }));
+    this.rawDocumentUrl = this.pdfObjectUrl;
+
+    if (shouldUseHtmlFallback) {
+      const html = this.createPrintableDocument(documentJson);
+      this.previewObjectUrl = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+      this.documentUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.previewObjectUrl);
+    } else {
+      this.documentUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.pdfObjectUrl);
+    }
+
     this.documentTitle = documentJson.title;
     this.documentKind = `${documentJson.kind} PDF`;
     this.hasGeneratedPdf = true;
+    this.isShowingMobileHtmlPreview = shouldUseHtmlFallback;
   }
 
   private createPrintableDocument(documentJson: JsonPrintDocument): string {
@@ -444,9 +470,14 @@ export class AppComponent implements OnDestroy {
   }
 
   private revokeObjectUrl(): void {
-    if (this.objectUrl) {
-      URL.revokeObjectURL(this.objectUrl);
-      this.objectUrl = undefined;
+    if (this.pdfObjectUrl) {
+      URL.revokeObjectURL(this.pdfObjectUrl);
+      this.pdfObjectUrl = undefined;
+    }
+
+    if (this.previewObjectUrl) {
+      URL.revokeObjectURL(this.previewObjectUrl);
+      this.previewObjectUrl = undefined;
     }
   }
 
@@ -455,6 +486,19 @@ export class AppComponent implements OnDestroy {
     this.rawDocumentUrl = '';
     this.documentUrl = this.sanitizer.bypassSecurityTrustResourceUrl('');
     this.hasGeneratedPdf = false;
+    this.isShowingMobileHtmlPreview = false;
+  }
+
+  private shouldUseHtmlPreviewFallback(): boolean {
+    return /Android/i.test(window.navigator.userAgent);
+  }
+
+  private toFileName(value: string): string {
+    return value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'generated-document';
   }
 
   private collectPdfLines(documentJson: JsonPrintDocument): string[] {
