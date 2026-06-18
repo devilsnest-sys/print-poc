@@ -7,49 +7,9 @@
     </div>
 
     <div class="actions">
-      <button type="button" class="secondary" (click)="generateDocumentFromJson()">Regenerate from JSON</button>
-      <button type="button" class="secondary" (click)="resetJsonInput()">Reset JSON</button>
-      <button type="button" class="secondary" (click)="openDocumentInNewTab()" [disabled]="!hasGeneratedPdf">
-        {{ isShowingMobileHtmlPreview ? 'Open PDF' : 'Open preview' }}
-      </button>
-      <button type="button" class="secondary" (click)="downloadDocument()" [disabled]="!hasGeneratedPdf">Download PDF</button>
-      <button type="button" class="primary" (click)="printDocument()">Print PDF</button>
+      <button type="button" class="primary" (click)="printDocument()">Print</button>
     </div>
   </section>
 
   <p class="error" *ngIf="errorMessage" role="alert">{{ errorMessage }}</p>
-
-  <section class="workspace" aria-label="JSON input and generated document preview">
-    <aside class="json-panel">
-      <label for="jsonInput">
-        <span class="eyebrow">JSON input</span>
-        <strong>Update document data and styles</strong>
-      </label>
-      <textarea
-        id="jsonInput"
-        [value]="jsonInput"
-        (input)="updateJsonInput($event)"
-        spellcheck="false"
-        aria-describedby="jsonHelp">
-      </textarea>
-      <p id="jsonHelp">Click Print PDF to generate and show a PDF from the latest valid JSON.</p>
-    </aside>
-
-    <section class="viewer-panel" aria-label="Generated document preview">
-      <div class="empty-preview" *ngIf="!hasGeneratedPdf">
-        <span class="eyebrow">PDF preview</span>
-        <strong>No PDF generated yet</strong>
-        <p>Click Print PDF to generate and show the document here.</p>
-      </div>
-      <p class="mobile-preview-note" *ngIf="hasGeneratedPdf && isShowingMobileHtmlPreview">
-        Android Chrome cannot display generated PDF files inline, so this panel shows the generated document content. Use Download PDF to save the generated file.
-      </p>
-      <iframe
-        *ngIf="hasGeneratedPdf"
-        id="documentFrame"
-        title="Generated document preview"
-        [src]="documentUrl">
-      </iframe>
-    </section>
-  </section>
 </main>

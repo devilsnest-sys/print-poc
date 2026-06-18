@@ -11,7 +11,7 @@
   gap: 16px;
   min-height: 100vh;
   padding: 20px;
-  grid-template-rows: auto auto 1fr;
+  grid-template-rows: auto auto;
 }
 
 .toolbar {
@@ -78,12 +78,6 @@ button:disabled {
   opacity: 0.55;
 }
 
-.secondary {
-  background: #f8fafc;
-  border-color: #cbd6e4;
-  color: #1c3554;
-}
-
 .primary {
   background: #136f63;
   color: #ffffff;
@@ -96,92 +90,6 @@ button:disabled {
   color: #9f1d12;
   margin: 0;
   padding: 10px 12px;
-}
-
-.workspace {
-  display: grid;
-  gap: 16px;
-  grid-template-columns: minmax(320px, 440px) minmax(0, 1fr);
-  min-height: 0;
-}
-
-.json-panel {
-  background: #ffffff;
-  border: 1px solid #d9e1ec;
-  border-radius: 8px;
-  display: grid;
-  gap: 12px;
-  min-height: 0;
-  padding: 16px;
-}
-
-.json-panel label {
-  color: #182033;
-  display: grid;
-  gap: 2px;
-}
-
-.json-panel textarea {
-  background: #101827;
-  border: 1px solid #263752;
-  border-radius: 8px;
-  color: #e6edf7;
-  font: 12px/1.55 "Cascadia Code", Consolas, "Courier New", monospace;
-  min-height: 560px;
-  outline: none;
-  padding: 14px;
-  resize: vertical;
-  tab-size: 2;
-  white-space: pre;
-}
-
-.json-panel textarea:focus {
-  border-color: #136f63;
-  box-shadow: 0 0 0 3px rgba(19, 111, 99, 0.18);
-}
-
-.json-panel p {
-  font-size: 13px;
-  margin: 0;
-}
-
-.viewer-panel {
-  background: #ffffff;
-  border: 1px solid #d9e1ec;
-  border-radius: 8px;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.empty-preview {
-  align-content: center;
-  display: grid;
-  justify-items: center;
-  min-height: 620px;
-  padding: 24px;
-  text-align: center;
-}
-
-.empty-preview strong {
-  color: #182033;
-  font-size: 18px;
-}
-
-.mobile-preview-note {
-  background: #f8fafc;
-  border-bottom: 1px solid #d9e1ec;
-  color: #41536a;
-  font-size: 13px;
-  margin: 0;
-  padding: 10px 12px;
-}
-
-iframe {
-  border: 0;
-  display: block;
-  height: 100%;
-  min-height: 620px;
-  width: 100%;
 }
 
 @media (max-width: 760px) {
@@ -204,13 +112,5 @@ iframe {
 
   button {
     flex: 1 1 140px;
-  }
-
-  .json-panel textarea {
-    min-height: 360px;
-  }
-
-  iframe {
-    min-height: 560px;
   }
 }

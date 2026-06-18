@@ -1,5 +1,4 @@
-import { Component, OnDestroy } from '@angular/core';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { Component } from '@angular/core';
 
 type JsonStyle = Record<string, string | number>;
 
@@ -47,7 +46,7 @@ interface JsonPrintDocument {
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
-export class AppComponent implements OnDestroy {
+export class AppComponent {
   readonly defaultPrintJson: JsonPrintDocument = {
     title: 'Administration of IV Heparin',
     kind: 'Skill Evaluation',
@@ -178,22 +177,7 @@ export class AppComponent implements OnDestroy {
   activePrintJson = this.defaultPrintJson;
   documentTitle = this.defaultPrintJson.title;
   documentKind = this.defaultPrintJson.kind;
-  documentUrl: SafeResourceUrl;
-  rawDocumentUrl = '';
   errorMessage = '';
-  hasGeneratedPdf = false;
-  isShowingMobileHtmlPreview = false;
-
-  private pdfObjectUrl?: string;
-  private previewObjectUrl?: string;
-
-  constructor(private readonly sanitizer: DomSanitizer) {
-    this.documentUrl = this.sanitizer.bypassSecurityTrustResourceUrl('');
-  }
-
-  ngOnDestroy(): void {
-    this.revokeObjectUrl();
-  }
 
   generateDocumentFromJson(): boolean {
     const parsedJson = this.parseJsonInput();
@@ -214,12 +198,12 @@ export class AppComponent implements OnDestroy {
       return;
     }
 
-    this.generatePdfFromJson(this.activePrintJson);
+    const html = this.createPrintableDocument(this.activePrintJson);
+    this.openPrintWindow(html, this.activePrintJson.title);
   }
 
   updateJsonInput(event: Event): void {
     this.jsonInput = (event.target as HTMLTextAreaElement).value;
-    this.clearGeneratedPdf();
   }
 
   resetJsonInput(): void {
@@ -228,52 +212,6 @@ export class AppComponent implements OnDestroy {
     this.documentTitle = this.defaultPrintJson.title;
     this.documentKind = this.defaultPrintJson.kind;
     this.errorMessage = '';
-    this.clearGeneratedPdf();
-  }
-
-  openDocumentInNewTab(): void {
-    if (!this.rawDocumentUrl) {
-      return;
-    }
-
-    window.open(this.rawDocumentUrl, '_blank', 'noopener,noreferrer');
-  }
-
-  downloadDocument(): void {
-    if (!this.rawDocumentUrl) {
-      return;
-    }
-
-    const link = document.createElement('a');
-    link.href = this.rawDocumentUrl;
-    link.download = `${this.toFileName(this.documentTitle)}.pdf`;
-    link.rel = 'noopener';
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-  }
-
-  private generatePdfFromJson(documentJson: JsonPrintDocument): void {
-    const lines = this.collectPdfLines(documentJson);
-    const pdf = this.createPdfDocument(lines, documentJson.title);
-    const shouldUseHtmlFallback = this.shouldUseHtmlPreviewFallback();
-
-    this.revokeObjectUrl();
-    this.pdfObjectUrl = URL.createObjectURL(new Blob([pdf], { type: 'application/pdf' }));
-    this.rawDocumentUrl = this.pdfObjectUrl;
-
-    if (shouldUseHtmlFallback) {
-      const html = this.createPrintableDocument(documentJson);
-      this.previewObjectUrl = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
-      this.documentUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.previewObjectUrl);
-    } else {
-      this.documentUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.pdfObjectUrl);
-    }
-
-    this.documentTitle = documentJson.title;
-    this.documentKind = `${documentJson.kind} PDF`;
-    this.hasGeneratedPdf = true;
-    this.isShowingMobileHtmlPreview = shouldUseHtmlFallback;
   }
 
   private createPrintableDocument(documentJson: JsonPrintDocument): string {
@@ -469,170 +407,22 @@ export class AppComponent implements OnDestroy {
       .replaceAll("'", '&#039;');
   }
 
-  private revokeObjectUrl(): void {
-    if (this.pdfObjectUrl) {
-      URL.revokeObjectURL(this.pdfObjectUrl);
-      this.pdfObjectUrl = undefined;
-    }
+  private openPrintWindow(html: string, title: string): void {
+    const printWindow = window.open('', '_blank');
 
-    if (this.previewObjectUrl) {
-      URL.revokeObjectURL(this.previewObjectUrl);
-      this.previewObjectUrl = undefined;
-    }
-  }
-
-  private clearGeneratedPdf(): void {
-    this.revokeObjectUrl();
-    this.rawDocumentUrl = '';
-    this.documentUrl = this.sanitizer.bypassSecurityTrustResourceUrl('');
-    this.hasGeneratedPdf = false;
-    this.isShowingMobileHtmlPreview = false;
-  }
-
-  private shouldUseHtmlPreviewFallback(): boolean {
-    return /Android/i.test(window.navigator.userAgent);
-  }
-
-  private toFileName(value: string): string {
-    return value
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '') || 'generated-document';
-  }
-
-  private collectPdfLines(documentJson: JsonPrintDocument): string[] {
-    const lines = [documentJson.kind, documentJson.title, ''];
-    documentJson.body.forEach((block) => this.appendBlockText(block, lines));
-    return lines;
-  }
-
-  private appendBlockText(block: JsonBlock, lines: string[]): void {
-    if (block.type === 'text') {
-      lines.push(block.text);
+    if (!printWindow) {
+      this.errorMessage = 'Print window was blocked. Please allow pop-ups and try again.';
       return;
     }
 
-    if (block.type === 'table') {
-      lines.push(block.columns.join(' | '));
-      block.rows.forEach((row) => lines.push(row.map((cell) => String(cell)).join(' | ')));
-      if (block.footer) {
-        lines.push(block.footer.map((cell) => String(cell)).join(' | '));
-      }
-      return;
-    }
-
-    block.children.forEach((child) => this.appendBlockText(child, lines));
-    lines.push('');
-  }
-
-  private createPdfDocument(lines: string[], title: string): string {
-    const pageWidth = 595;
-    const pageHeight = 842;
-    const margin = 44;
-    const lineHeight = 14;
-    const maxChars = 88;
-    const pages: string[][] = [[]];
-    let currentLineCount = 0;
-    const maxLinesPerPage = Math.floor((pageHeight - margin * 2) / lineHeight);
-
-    lines.flatMap((line) => this.wrapPdfLine(line, maxChars)).forEach((line) => {
-      if (currentLineCount >= maxLinesPerPage) {
-        pages.push([]);
-        currentLineCount = 0;
-      }
-
-      pages[pages.length - 1].push(line);
-      currentLineCount++;
-    });
-
-    const objects: string[] = [];
-    const addObject = (value: string): number => {
-      objects.push(value);
-      return objects.length;
-    };
-    const fontObject = addObject('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');
-    const pageRefs: number[] = [];
-
-    pages.forEach((pageLines, pageIndex) => {
-      const content = [
-        'BT',
-        '/F1 10 Tf',
-        `${margin} ${pageHeight - margin} Td`,
-        `${lineHeight} TL`,
-        ...pageLines.map((line, lineIndex) => {
-          const fontCommand = pageIndex === 0 && lineIndex < 2 ? '/F1 14 Tf ' : '/F1 10 Tf ';
-          return `${fontCommand}(${this.escapePdfText(line)}) Tj T*`;
-        }),
-        'ET'
-      ].join('\n');
-      const contentObject = addObject(`<< /Length ${content.length} >>\nstream\n${content}\nendstream`);
-      pageRefs.push(addObject(`<< /Type /Page /Parent 0 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Resources << /Font << /F1 ${fontObject} 0 R >> >> /Contents ${contentObject} 0 R >>`));
-    });
-
-    const pagesObject = addObject(`<< /Type /Pages /Kids [${pageRefs.map((ref) => `${ref} 0 R`).join(' ')}] /Count ${pageRefs.length} >>`);
-    pageRefs.forEach((pageRef) => {
-      objects[pageRef - 1] = objects[pageRef - 1].replace('/Parent 0 0 R', `/Parent ${pagesObject} 0 R`);
-    });
-    const catalogObject = addObject(`<< /Type /Catalog /Pages ${pagesObject} 0 R >>`);
-    const infoObject = addObject(`<< /Title (${this.escapePdfText(title)}) /Producer (Print POC) >>`);
-
-    let pdf = '%PDF-1.4\n';
-    const offsets = [0];
-    objects.forEach((object, index) => {
-      offsets.push(pdf.length);
-      pdf += `${index + 1} 0 obj\n${object}\nendobj\n`;
-    });
-
-    const xrefOffset = pdf.length;
-    pdf += `xref\n0 ${objects.length + 1}\n`;
-    pdf += '0000000000 65535 f \n';
-    offsets.slice(1).forEach((offset) => {
-      pdf += `${String(offset).padStart(10, '0')} 00000 n \n`;
-    });
-    pdf += `trailer\n<< /Size ${objects.length + 1} /Root ${catalogObject} 0 R /Info ${infoObject} 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
-
-    return pdf;
-  }
-
-  private wrapPdfLine(value: string, maxChars: number): string[] {
-    const normalized = value.replace(/\s+/g, ' ').trim();
-
-    if (!normalized) {
-      return [''];
-    }
-
-    const lines: string[] = [];
-    let current = '';
-
-    normalized.split(' ').forEach((word) => {
-      if (!current) {
-        current = word;
-        return;
-      }
-
-      if (`${current} ${word}`.length > maxChars) {
-        lines.push(current);
-        current = word;
-        return;
-      }
-
-      current = `${current} ${word}`;
-    });
-
-    if (current) {
-      lines.push(current);
-    }
-
-    return lines;
-  }
-
-  private escapePdfText(value: string): string {
-    return value
-      .normalize('NFKD')
-      .replace(/[^\x20-\x7E]/g, '')
-      .replace(/\\/g, '\\\\')
-      .replace(/\(/g, '\\(')
-      .replace(/\)/g, '\\)');
+    printWindow.document.open();
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.document.title = title;
+    printWindow.onafterprint = () => printWindow.close();
+    printWindow.focus();
+    printWindow.setTimeout(() => {
+      printWindow.print();
+    }, 250);
   }
 }
