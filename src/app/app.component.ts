@@ -179,6 +179,9 @@ export class AppComponent {
   documentKind = this.defaultPrintJson.kind;
   errorMessage = '';
 
+  private printFrame?: HTMLIFrameElement;
+  private printFrameCleanupId?: number;
+
   generateDocumentFromJson(): boolean {
     const parsedJson = this.parseJsonInput();
 
@@ -199,7 +202,7 @@ export class AppComponent {
     }
 
     const html = this.createPrintableDocument(this.activePrintJson);
-    this.openPrintWindow(html, this.activePrintJson.title);
+    this.printFromHiddenFrame(html);
   }
 
   updateJsonInput(event: Event): void {
@@ -407,21 +410,51 @@ export class AppComponent {
       .replaceAll("'", '&#039;');
   }
 
-  private openPrintWindow(html: string, title: string): void {
-    const printWindow = window.open('', '_blank');
+  private printFromHiddenFrame(html: string): void {
+    this.removePrintFrame();
 
-    if (!printWindow) {
-      this.errorMessage = 'Print window was blocked. Please allow pop-ups and try again.';
+    const frame = document.createElement('iframe');
+    frame.setAttribute('aria-hidden', 'true');
+    frame.style.border = '0';
+    frame.style.height = '1px';
+    frame.style.left = '-10000px';
+    frame.style.opacity = '0';
+    frame.style.position = 'fixed';
+    frame.style.top = '0';
+    frame.style.width = '1px';
+    document.body.appendChild(frame);
+    this.printFrame = frame;
+
+    const frameDocument = frame.contentDocument ?? frame.contentWindow?.document;
+
+    if (!frameDocument || !frame.contentWindow) {
+      this.errorMessage = 'Unable to prepare the print document. Please try again.';
+      this.removePrintFrame();
       return;
     }
 
-    printWindow.document.open();
-    printWindow.document.write(html);
-    printWindow.document.close();
-    printWindow.document.title = title;
-    printWindow.focus();
-    printWindow.setTimeout(() => {
-      printWindow.print();
-    }, 600);
+    frame.onload = () => {
+      frame.contentWindow?.focus();
+      frame.contentWindow?.setTimeout(() => {
+        frame.contentWindow?.print();
+        this.schedulePrintFrameCleanup();
+      }, 600);
+    };
+
+    frameDocument.open();
+    frameDocument.write(html);
+    frameDocument.close();
+  }
+
+  private schedulePrintFrameCleanup(): void {
+    window.clearTimeout(this.printFrameCleanupId);
+    this.printFrameCleanupId = window.setTimeout(() => this.removePrintFrame(), 60000);
+  }
+
+  private removePrintFrame(): void {
+    window.clearTimeout(this.printFrameCleanupId);
+    this.printFrameCleanupId = undefined;
+    this.printFrame?.remove();
+    this.printFrame = undefined;
   }
 }
