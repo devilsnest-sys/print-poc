@@ -419,10 +419,9 @@ export class AppComponent {
     printWindow.document.write(html);
     printWindow.document.close();
     printWindow.document.title = title;
-    printWindow.onafterprint = () => printWindow.close();
     printWindow.focus();
     printWindow.setTimeout(() => {
       printWindow.print();
-    }, 250);
+    }, 600);
   }
 }
